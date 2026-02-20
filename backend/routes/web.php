@@ -1,14 +1,7 @@
 <?php
 
-use App\Models\Category;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CategoryController;
 
-Route::get('/', function () {
-    $categories = Category::with('products')->get();
-    return view('home', compact('categories'));
-});
-
-Route::get('/lang/{lang}', function ($lang) {
-    session(['locale' => $lang]);
-    return redirect('/');
-});
+Route::get('/categorie/{slug}', [CategoryController::class, 'show'])
+    ->name('category.show');

@@ -1,42 +1,17 @@
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ __('messages.title') }}</title>
-</head>
-<body>
+@extends('layouts.app')
 
-    <header>
-        <h1>🏍️ {{ __('messages.welcome') }}</h1>
+@section('content')
 
-        <nav>
-            <a href="/lang/fr">🇫🇷 FR</a> |
-            <a href="/lang/en">🇬🇧 EN</a>
-        </nav>
-        <hr>
-    </header>
+<h2 class="mb-4">Bienvenue sur le comparateur d'équipements moto</h2>
 
-    @forelse($categories as $category)
-        <h2>{{ $category->name }}</h2>
+<p>
+Comparez les prix des meilleurs équipements moto en France.
+Casques, gants, vestes, bottes… trouvez le meilleur prix.
+</p>
 
-        @if($category->products->isEmpty())
-            <p>{{ __('messages.no_product') }}</p>
-        @else
-            <ul>
-                @foreach($category->products as $product)
-                    <li>
-                        {{ $product->name }} – €{{ $product->price }}
-                        |
-                        <a href="{{ $product->link }}" target="_blank">
-                            {{ __('messages.view_product') }}
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-    @empty
-        <p>{{ __('messages.no_category') }}</p>
-    @endforelse
+@endsection
 
-</body>
-</html>
+
+
+
+
