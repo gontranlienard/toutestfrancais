@@ -3,20 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PriceHistory extends Model
 {
-    use HasFactory;
+    protected $table = 'price_history';
 
     protected $fillable = [
         'offer_id',
-        'price',
+        'price'
     ];
 
-    public function offer(): BelongsTo
+    public function offer()
     {
         return $this->belongsTo(Offer::class);
     }
 }
+

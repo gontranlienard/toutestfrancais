@@ -1,0 +1,58 @@
+[
+  {
+    "pse_id": 191513,
+    "size": "S",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001045",
+    "available": true
+  },
+  {
+    "pse_id": 191514,
+    "size": "M",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001052",
+    "available": true
+  },
+  {
+    "pse_id": 191516,
+    "size": "L",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001069",
+    "available": true
+  },
+  {
+    "pse_id": 191517,
+    "size": "XL",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001076",
+    "available": true
+  },
+  {
+    "pse_id": 191518,
+    "size": "2XL",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001083",
+    "available": true
+  },
+  {
+    "pse_id": 191519,
+    "size": "3XL",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001090",
+    "available": true
+  },
+  {
+    "pse_id": 191520,
+    "size": "4XL",
+    "color": "Noir",
+    "price": 159.99,
+    "sku": "7070273001106",
+    "available": true
+  }
+]

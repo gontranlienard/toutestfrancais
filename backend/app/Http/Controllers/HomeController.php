@@ -2,14 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use Illuminate\Http\Request;
+use App\Models\Product;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::orderBy('name')->get();
+        $query = Product::with('brand');
 
-        return view('home', compact('categories'));
+        // 🔎 Recherche
+        if ($request->filled('q')) {
+
+            $search = trim($request->q);
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('normalized_name', 'LIKE', "%{$search}%")
+                  ->orWhere('ean', 'LIKE', "%{$search}%")
+                  ->orWhere('model_reference', 'LIKE', "%{$search}%")
+                  ->orWhereHas('brand', function ($b) use ($search) {
+                      $b->where('name', 'LIKE', "%{$search}%");
+                  });
+
+            });
+        }
+
+        $products = $query
+            ->latest()
+            ->paginate(30)
+            ->withQueryString();
+
+        return view('home', compact('products'));
     }
 }

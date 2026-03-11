@@ -2,72 +2,63 @@
 
 @section('content')
 
-<div class="container">
+<div class="product-page">
 
-    <div class="row">
+    {{-- HEADER --}}
+    <div class="product-header">
+        <h1>{{ $product->name }}</h1>
+
+        @if($product->brand)
+            <a href="{{ route('brand.show', $product->brand->slug) }}" class="brand-link">
+                {{ $product->brand->name }}
+            </a>
+        @endif
+    </div>
+
+    {{-- LAYOUT 2 COLONNES --}}
+    <div class="product-layout">
 
         {{-- IMAGE --}}
-        <div class="col-md-5">
+        <div class="product-image-box">
+            <img src="{{ $product->image }}" alt="{{ $product->name }}">
+        </div>
 
-            @if($product->image)
-                <img src="{{ $product->image }}"
-                     class="img-fluid"
-                     style="max-height:450px;object-fit:contain;">
-            @else
-                <div style="height:400px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;">
-                    Image indisponible
-                </div>
-            @endif
+        {{-- OFFRES --}}
+        <div class="offers-section">
+
+    <h2>Offres disponibles</h2>
+
+    @forelse($offers as $offer)
+
+        <div class="offer-row {{ $loop->first ? 'best-offer' : '' }}">
+
+            <div class="offer-left">
+                <span class="offer-site">{{ $offer->site->name }}</span>
+                @if($loop->first)
+                    <span class="badge-best">Meilleur prix</span>
+                @endif
+            </div>
+
+            <div class="offer-price">
+                {{ number_format($offer->price, 2, ',', ' ') }} €
+            </div>
+
+            <div class="offer-action">
+                <a href="{{ $offer->url }}"
+                   target="_blank"
+                   rel="nofollow noopener"
+                   class="btn-offer">
+                    Voir l'offre
+                </a>
+            </div>
 
         </div>
 
-        {{-- INFOS --}}
-        <div class="col-md-7">
+    @empty
+        <p>Aucune offre disponible.</p>
+    @endforelse
 
-            <h1>{{ $product->name }}</h1>
-
-            @if($product->brand)
-                <p><strong>Marque :</strong> {{ $product->brand }}</p>
-            @endif
-
-            @if($product->offers->count())
-                <h3 class="text-danger">
-                    À partir de {{ number_format($product->offers->min('price'), 2, ',', ' ') }} €
-                </h3>
-            @endif
-
-            <hr>
-
-            <h4>Offres disponibles</h4>
-
-            @forelse($product->offers as $offer)
-
-                <div class="card mb-3">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-
-                        <div>
-                            <strong>{{ $offer->site->name ?? 'Site inconnu' }}</strong><br>
-                            Prix : {{ number_format($offer->price, 2, ',', ' ') }} €
-                        </div>
-
-                        <a href="{{ $product->url }}"
-                           target="_blank"
-                           class="btn btn-success">
-                            Voir sur le site
-                        </a>
-
-                    </div>
-                </div>
-
-            @empty
-                <p>Aucune offre disponible.</p>
-            @endforelse
-
-            <a href="{{ route('home') }}" class="btn btn-secondary mt-3">
-                ← Retour au comparateur
-            </a>
-
-        </div>
+</div>
 
     </div>
 

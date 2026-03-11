@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CategorySeeder::class,
+			CategoryMappingRuleSeeder::class,
         ]);
     }
 }

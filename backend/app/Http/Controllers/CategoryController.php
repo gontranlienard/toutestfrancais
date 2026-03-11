@@ -3,25 +3,61 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Product;
 
 class CategoryController extends Controller
 {
-    public function show($slug)
+    public function show($path)
     {
-        $category = Category::where('slug', $slug)->firstOrFail();
+        $slugs = explode('/', $path);
 
-        $products = $category->products()
-            ->withMin('offers', 'price')
-            ->paginate(20);
+        $parentId = null;
+        $category = null;
 
-        $categories = Category::whereNull('parent_id')
-            ->with('children')
-            ->get();
+        foreach ($slugs as $slug) {
+            $category = Category::where('slug', $slug)
+                ->where('parent_id', $parentId)
+                ->firstOrFail();
+
+            $parentId = $category->id;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Récupérer TOUS les descendants récursivement
+        |--------------------------------------------------------------------------
+        */
+
+        $categoryIds = $this->getAllDescendantIds($category);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Produits (exactement comme la home)
+        |--------------------------------------------------------------------------
+        */
+
+        $products = Product::whereHas('categories', function ($query) use ($categoryIds) {
+                $query->whereIn('categories.id', $categoryIds);
+            })
+            ->with(['brand', 'variants.offers'])
+            ->latest()
+            ->paginate(30)
+            ->withQueryString();
 
         return view('category.show', [
-            'category'   => $category,
-            'products'   => $products,
-            'categories' => $categories
+            'category' => $category,
+            'products' => $products
         ]);
+    }
+
+    private function getAllDescendantIds($category)
+    {
+        $ids = collect([$category->id]);
+
+        foreach ($category->children as $child) {
+            $ids = $ids->merge($this->getAllDescendantIds($child));
+        }
+
+        return $ids;
     }
 }

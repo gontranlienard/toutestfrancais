@@ -10,55 +10,99 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        // NIVEAU 1
-        $equipement = Category::create([
-            'name' => 'Equipement moto',
-            'slug' => Str::slug('Equipement moto')
-        ]);
+        $structure = [
 
-        $casques = Category::create([
-            'name' => 'Casques',
-            'slug' => Str::slug('Casques')
-        ]);
+            'Casques' => [
+                'Intégral',
+                'Modulable',
+                'Jet',
+                'Cross / Enduro',
+                'Enfant',
+                'Replica'
+            ],
 
-        $bagagerie = Category::create([
-            'name' => 'Bagagerie',
-            'slug' => Str::slug('Bagagerie')
-        ]);
+            'Vêtements Moto' => [
+                'Blousons Cuir',
+                'Blousons Textile',
+                'Vestes Touring',
+                'Pantalons',
+                'Jeans Moto',
+                'Pluie'
+            ],
 
-        // NIVEAU 2
-        $equipementMotard = Category::create([
-            'name' => 'Equipement motard',
-            'slug' => Str::slug('Equipement motard'),
-            'parent_id' => $equipement->id
-        ]);
+            'Gants' => [
+                'Été',
+                'Hiver',
+                'Mi-saison',
+                'Racing',
+                'Cross'
+            ],
 
-        // NIVEAU 3
-        $blouson = Category::create([
-            'name' => 'Blouson',
-            'slug' => Str::slug('Blouson'),
-            'parent_id' => $equipementMotard->id
-        ]);
+            'Bottes & Chaussures' => [
+                'Bottes Racing',
+                'Bottes Touring',
+                'Bottes Cross',
+                'Chaussures Moto'
+            ],
 
-        // NIVEAU 4
-        $blousonCuir = Category::create([
-            'name' => 'Blouson cuir',
-            'slug' => Str::slug('Blouson cuir'),
-            'parent_id' => $blouson->id
-        ]);
+            'Combinaisons' => [
+                '1 Pièce',
+                '2 Pièces'
+            ],
 
-        // NIVEAU 5
-        $goreTex = Category::create([
-            'name' => 'Gore-Tex',
-            'slug' => Str::slug('Gore-Tex'),
-            'parent_id' => $blousonCuir->id
-        ]);
+            'Protections' => [
+                'Dorsales',
+                'Coudières',
+                'Genouillères',
+                'Airbag'
+            ],
 
-        // NIVEAU 6
-        Category::create([
-            'name' => 'Hiver',
-            'slug' => Str::slug('Hiver'),
-            'parent_id' => $goreTex->id
-        ]);
+            'Bagagerie' => [
+                'Sacoches',
+                'Top Case',
+                'Sacs à dos',
+                'Sacoches Réservoir'
+            ],
+
+            'Accessoires Moto' => [
+                'Intercom',
+                'Visières',
+                'Antivol',
+                'Housses'
+            ],
+
+            'Pièces & Entretien' => [
+                'Batterie',
+                'Huile',
+                'Filtre',
+                'Chaîne',
+                'Plaquettes'
+            ],
+
+            'Pneus' => [
+                'Route',
+                'Sport',
+                'Trail',
+                'Cross'
+            ],
+        ];
+
+        foreach ($structure as $parentName => $children) {
+
+            $parent = Category::create([
+                'name' => $parentName,
+                'slug' => Str::slug($parentName),
+                'parent_id' => null
+            ]);
+
+            foreach ($children as $childName) {
+                Category::create([
+                    'name' => $childName,
+                    'slug' => Str::slug($childName),
+                    'parent_id' => $parent->id
+                ]);
+            }
+        }
     }
 }
+

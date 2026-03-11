@@ -22,4 +22,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-scraper/output
+scraper/output/
+import/output/
+output/
+storage/
+# Node lock (si backend Laravel principal)
+scraper/package-lock.json

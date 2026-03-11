@@ -2,46 +2,26 @@
 
 @section('content')
 
-<div class="category-header">
-    <h1>{{ $category->name }}</h1>
-    <p>{{ $products->total() }} produits trouvés</p>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+
+    <h1 style="font-size:22px; font-weight:500;">
+        {{ $category->name }}
+    </h1>
+
+    <span style="color:#6B7280; font-size:14px;">
+        {{ $products->total() }} produits trouvés
+    </span>
+
 </div>
 
-<div class="products-grid">
-    @forelse($products as $product)
-        <div class="product-card">
-
-            <div class="product-image">
-                @if($product->image)
-                    <img src="{{ $product->image }}" alt="{{ $product->name }}">
-                @endif
-            </div>
-
-            <div class="product-body">
-                <h3>{{ $product->name }}</h3>
-
-                @if($product->offers_min_price)
-                    <p class="price">
-                        À partir de
-                        {{ number_format($product->offers_min_price, 2, ',', ' ') }} €
-                    </p>
-                @else
-                    <p class="no-price">Prix indisponible</p>
-                @endif
-
-                <a href="#" class="btn">
-                    Voir le prix
-                </a>
-            </div>
-
-        </div>
-    @empty
-        <p>Aucun produit trouvé.</p>
-    @endforelse
+<div class="product-grid">
+    @foreach($products as $product)
+        @include('components.product-card', ['product' => $product])
+    @endforeach
 </div>
 
-<div class="pagination-wrapper">
-    {{ $products->links() }}
+<div style="margin-top:30px;">
+    {{ $products->links('vendor.pagination.default') }}
 </div>
 
 @endsection

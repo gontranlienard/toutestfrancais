@@ -9,14 +9,32 @@ class Offer extends Model
     protected $table = 'offers';
 
     protected $fillable = [
-        'product_id',
+        'variant_id',
         'site_id',
         'price',
+        'currency',
+        'availability',
         'url'
     ];
 
-    public function product()
+    public function variant()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Variant::class);
     }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    public function priceHistory()
+    {
+        return $this->hasMany(PriceHistory::class);
+    }
+	public function product()
+	{
+    return $this->belongsTo(\App\Models\Product::class);
+	}
 }
+
+

@@ -8,7 +8,7 @@ class Site extends Model
 {
     protected $fillable = [
         'name',
-        'slug',
+        'slug'
     ];
 
     public function offers()

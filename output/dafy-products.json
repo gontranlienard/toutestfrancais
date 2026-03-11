@@ -1,0 +1,46 @@
+[
+  {
+    "site": "dafy",
+    "site_name": "Dafy",
+    "name": "Baskets Faster-4 Drystar®",
+    "brand": "Alpinestars",
+    "price": 179.95,
+    "currency": "EUR",
+    "url": "https://www.dafy-moto.com/baskets-faster-4-drystar-alpinestars.html",
+    "image": "https://www.dafy-moto.com/images/product/medium/basket-alpinestars-baskets-faster-4-drystar-noir-gris-1.jpg?20260122134724",
+    "category": "gants-moto"
+  },
+  {
+    "site": "dafy",
+    "site_name": "Dafy",
+    "name": "Tracker GPS Classic - Edition 2026",
+    "brand": "invoxia",
+    "price": 129,
+    "currency": "EUR",
+    "url": "https://www.dafy-moto.com/tracker-gps-classic-edition-2026-invoxia.html",
+    "image": "https://www.dafy-moto.com/images/product/medium/tracker-gps-invoxia-tracker-gps-classic---edition-2026-noir-1.jpg?20260122134724",
+    "category": "gants-moto"
+  },
+  {
+    "site": "dafy",
+    "site_name": "Dafy",
+    "name": "Casque enfant Furious Kid Miami",
+    "brand": "Shot",
+    "price": 119.99,
+    "currency": "EUR",
+    "url": "https://www.dafy-moto.com/casque-enfant-furious-kid-miami-shot.html",
+    "image": "https://www.dafy-moto.com/images/product/medium/casque-trial-shot-casque-enfant-furious-kid-miami-orange-rose-turquoise-noir-1.jpg?20260122134724",
+    "category": "gants-moto"
+  },
+  {
+    "site": "dafy",
+    "site_name": "Dafy",
+    "name": "Casque D-Skwal 3 Dark Shadow",
+    "brand": "Shark",
+    "price": 249.99,
+    "currency": "EUR",
+    "url": "https://www.dafy-moto.com/casque-d-skwal-3-dark-shadow-shark.html",
+    "image": "https://www.dafy-moto.com/images/product/medium/casque-integral-shark-casque-d-skwal-3-dark-shadow-titanium-mat-1.jpg?20260122134724",
+    "category": "gants-moto"
+  }
+]

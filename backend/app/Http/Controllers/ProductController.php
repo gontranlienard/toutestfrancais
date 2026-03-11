@@ -4,87 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    // PAGE ACCUEIL
+    public function index()
     {
-        $menuCategories = Category::roots()
-            ->with('children')
-            ->orderBy('name')
-            ->get();
+        $products = Product::with([
+                'brand',
+                'variants.offers'
+            ])
+            ->inRandomOrder()
+            ->paginate(30);
 
-        $query = Product::withMin('offers', 'price')
-            ->whereHas('offers');
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                  ->orWhere('brand', 'like', "%$search%");
-            });
-        }
-
-        $products = $query
-            ->orderBy('offers_min_price')
-            ->paginate(20);
-
-        return view('front.index', [
-            'products' => $products,
-            'currentCategory' => null,
-            'menuCategories' => $menuCategories
-        ]);
+        return view('home', compact('products'));
     }
 
-    public function category($slug, Request $request)
-    {
-        $menuCategories = Category::roots()
-            ->with('children')
-            ->orderBy('name')
-            ->get();
+    // PAGE PRODUIT
+    public function show($slug)
+{
+    $product = \App\Models\Product::with([
+        'brand',
+        'variants.offers.site'
+    ])
+    ->where('slug', $slug)
+    ->firstOrFail();
 
-        $category = Category::where('slug', $slug)
-            ->with('children')
-            ->firstOrFail();
+    // 🔥 On récupère toutes les offres de toutes les variantes
+    $allOffers = collect();
 
-        $ids = [$category->id];
-        $ids = array_merge($ids, $this->getAllChildrenIds($category));
-
-        $query = Product::withMin('offers', 'price')
-            ->whereHas('offers')
-            ->whereIn('category_id', $ids);
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                  ->orWhere('brand', 'like', "%$search%");
-            });
+    foreach ($product->variants as $variant) {
+        foreach ($variant->offers as $offer) {
+            $allOffers->push($offer);
         }
-
-        $products = $query
-            ->orderBy('offers_min_price')
-            ->paginate(20);
-
-        return view('front.index', [
-            'products' => $products,
-            'currentCategory' => $category,
-            'menuCategories' => $menuCategories
-        ]);
     }
 
-    private function getAllChildrenIds($category)
+    // 🔥 Grouper par site et garder la moins chère
+    $offers = $allOffers
+        ->groupBy('site_id')
+        ->map(function ($offersPerSite) {
+            return $offersPerSite->sortBy('price')->first();
+        })
+        ->sortBy('price');
+
+    return view('product.show', compact('product', 'offers'));
+}
+
+    // PAGE CATEGORIE
+    public function category($slug)
     {
-        $ids = [];
+        $category = Category::where('slug', $slug)->firstOrFail();
 
-        foreach ($category->children as $child) {
-            $ids[] = $child->id;
-            $ids = array_merge($ids, $this->getAllChildrenIds($child));
-        }
+        $products = $category->products()
+            ->with(['brand', 'variants.offers'])
+            ->latest()
+            ->paginate(12)
+            ->withQueryString(); // IMPORTANT pour garder paramètres
 
-        return $ids;
+        return view('home', compact('products', 'category'));
     }
 }
+
