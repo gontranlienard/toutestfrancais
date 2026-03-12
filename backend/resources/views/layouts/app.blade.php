@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SNBLM4E094"></script>
 <script>
@@ -127,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </footer>
+<script src="/js/app.js"></script>
 </body>
 </html>
 

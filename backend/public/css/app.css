@@ -325,6 +325,22 @@ a {
 .btn-product:hover {
     opacity: 0.9;
 }
+.product-brand-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.favorite-star{
+    cursor:pointer;
+    font-size:18px;
+    color:#F37021; /* orange par défaut */
+}
+
+.favorite-star.favorited{
+    color:#999; /* gris si déjà en favoris */
+}
 
 /* =========================================================
    PAGINATION
@@ -594,4 +610,63 @@ a {
     padding: 4px 10px;
     border-radius: 20px;
     font-weight: 600;
+}
+/* =========================================================
+   ESPACE UTILISATEUR
+========================================================= */
+
+.account-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.account-menu {
+    width: 200px;
+}
+
+.account-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.account-menu li {
+    margin-bottom: 12px;
+}
+
+.account-menu a {
+    display: block;
+    padding: 8px 10px;
+    text-decoration: none;
+    color: #1F2933;
+    border: 1px solid #ddd;
+    background: #F4F7FA;
+}
+
+.account-menu a:hover {
+    background: #E9EEF5;
+}
+
+.account-menu button {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    background: #F4F7FA;
+    text-align: left;
+    cursor: pointer;
+}
+
+.account-menu button:hover {
+    background: #E9EEF5;
+}
+
+.account-content {
+    flex: 1;
+}
+
+.account-content h1 {
+    margin-top: 0;
+    font-size: 32px;
 }

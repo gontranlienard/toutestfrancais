@@ -24,9 +24,15 @@
         </h3>
 
         @if(isset($product->brand) && $product->brand)
-           <p> <a href="{{ route('brand.show', $product->brand->slug) }}" class="brand-link">
-    {{ $product->brand->name }}</a></p>
-        @endif
+
+		<div class="product-brand-row">
+			<a href="{{ route('brand.show', $product->brand->slug) }}" class="brand-link">
+				{{ $product->brand->name }}
+			</a>
+			<span class="favorite-star"  data-variant="{{ $product->variants->first()->id }}">★</span>
+		</div>
+
+		@endif
 
 
         {{-- PRIX --}}

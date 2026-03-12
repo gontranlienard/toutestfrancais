@@ -1,12 +1,18 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UnmappedCategoryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\WishlistController;
+
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +40,9 @@ Route::get('/contact', [ContactController::class, 'show'])
 Route::post('/contact', [ContactController::class, 'send'])
     ->name('contact.send');
 
+Route::post('/wishlist/{variant}', [WishlistController::class,'toggle'])
+    ->name('wishlist.toggle');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -43,40 +52,59 @@ Route::post('/contact', [ContactController::class, 'send'])
 
 Route::middleware([\App\Http\Middleware\AdminAuth::class])->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Page catégories non mappées
-    |--------------------------------------------------------------------------
-    */
-
     Route::get('/admin/unmapped-categories',
         [UnmappedCategoryController::class, 'index']
     )->name('admin.unmapped.categories');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mapping simple
-    |--------------------------------------------------------------------------
-    */
 
     Route::post('/admin/unmapped-categories/map',
         [UnmappedCategoryController::class, 'map']
     )->name('admin.categories.map');
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mapping par lot (nouvelle fonctionnalité)
-    |--------------------------------------------------------------------------
-    */
-
     Route::post('/admin/unmapped-categories/map-bulk',
         [UnmappedCategoryController::class, 'mapBulk']
     )->name('admin.categories.mapBulk');
-        Route::post('/admin/rebuild-categories',
-                [UnmappedCategoryController::class,'rebuildCategories']
-        )->name('admin.categories.rebuild');
+
+    Route::post('/admin/rebuild-categories',
+        [UnmappedCategoryController::class,'rebuildCategories']
+    )->name('admin.categories.rebuild');
 
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->group(function () {
+
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('/register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
+    Route::post('/register', [RegisteredUserController::class, 'store']);
+
+});
+
+
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
+
+
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD UTILISATEUR
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/mon-compte', function () {
+    return view('account.dashboard');
+})
+->middleware('auth')
+->name('account.dashboard');
