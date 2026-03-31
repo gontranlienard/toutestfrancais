@@ -22,4 +22,21 @@ class BrandController extends Controller
             'products' => $products
         ]);
     }
+
+    // 🔥 NOUVELLE PAGE A → Z
+    public function index()
+    {
+        $brands = Brand::orderBy('name')->get(); // ⚠️ TOUTES les marques
+
+        $grouped = $brands->groupBy(function ($brand) {
+            return strtoupper(substr($brand->name, 0, 1));
+        });
+
+        $letters = range('A', 'Z');
+
+        return view('brand.index', [
+            'grouped' => $grouped,
+            'letters' => $letters
+        ]);
+    }
 }

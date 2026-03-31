@@ -44,12 +44,13 @@
             </div>
 
             <div class="offer-action">
-                <a href="{{ $offer->url }}"
-                   target="_blank"
-                   rel="nofollow noopener"
-                   class="btn-offer">
-                    Voir l'offre
-                </a>
+                <a href="/go/{{ $offer->id }}"
+					class="btn-product"
+					   target="_blank"
+					   rel="nofollow sponsored"
+					   class="offer-button">
+					   Voir l'offre
+                 </a>
             </div>
 
         </div>

@@ -23,7 +23,17 @@ class UnmappedCategory extends Model
     | Relations
     |--------------------------------------------------------------------------
     */
-
+	public function example_product()
+	{
+    return $this->hasOneThrough(
+        Product::class,
+        Offer::class,
+        'site_id',     // clé sur offers
+        'id',          // clé sur products
+        'site_id',     // clé sur unmapped_categories
+        'product_id'   // clé sur offers
+    );
+	}
     public function site()
     {
         return $this->belongsTo(Site::class);

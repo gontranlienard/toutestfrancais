@@ -1,47 +1,86 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.app')
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+@section('content')
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+<div class="contact-wrapper">
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+    <div class="contact-card">
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+        <h1 class="contact-title">Connexion</h1>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <p class="contact-subtitle">
+            Connectez-vous à votre compte Komparons Moto.
+        </p>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        @if(session('status'))
+            <div class="contact-success">
+                {{ session('status') }}
+            </div>
+        @endif
 
-        <div class="flex items-center justify-end mt-4">
+        <form method="POST" action="{{ route('login') }}" class="contact-form">
+            @csrf
+
+            {{-- EMAIL --}}
+            <div class="contact-field">
+                <label>Email *</label>
+                <input
+                    type="email"
+                    name="email"
+                    class="contact-input"
+                    value="{{ old('email') }}"
+                    placeholder="votre@email.com"
+                    required
+                    autofocus
+                >
+                @error('email')
+                    <div class="contact-error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- PASSWORD --}}
+            <div class="contact-field">
+                <label>Mot de passe *</label>
+                <input
+                    type="password"
+                    name="password"
+                    class="contact-input"
+                    required
+                >
+                @error('password')
+                    <div class="contact-error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- REMEMBER --}}
+            <div class="contact-field" style="display:flex; align-items:center; gap:8px;">
+                <input
+                    type="checkbox"
+                    name="remember"
+                    id="remember"
+                    {{ old('remember') ? 'checked' : '' }}
+                >
+                <label for="remember" style="margin:0;">
+                    Restez connecté
+                </label>
+            </div>
+
+            <button type="submit" class="contact-button">
+                Connexion
+            </button>
+
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+                <div style="text-align:center; margin-top:15px;">
+                    <a href="{{ route('password.request') }}" style="color: var(--primary); text-decoration:none;">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+        </form>
+
+    </div>
+
+</div>
+
+@endsection

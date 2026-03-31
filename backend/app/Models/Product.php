@@ -13,7 +13,7 @@ class Product extends Model
         'slug',
         'image',
         'normalized_name',
-		'model_key',
+        'model_key',
         'site_category_path'
     ];
 
@@ -32,6 +32,16 @@ class Product extends Model
                     preg_replace('/[^a-zA-Z0-9]/', '', $product->name)
                 );
             }
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Charger automatiquement le prix minimum
+        |--------------------------------------------------------------------------
+        */
+
+        static::addGlobalScope('min_price', function ($query) {
+            $query->withMin('offers', 'price');
         });
     }
 

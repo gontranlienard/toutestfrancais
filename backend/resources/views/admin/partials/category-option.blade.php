@@ -1,9 +1,9 @@
 <option value="{{ $category->id }}">
-    {{ str_repeat('— ', $level) }} {{ $category->name }}
+    {{ str_repeat('--', $level) }} {{ $category->name }}
 </option>
 
-@if($category->childrenRecursive)
-    @foreach($category->childrenRecursive as $child)
+@if($level < 3)
+    @foreach($category->children as $child)
         @include('admin.partials.category-option', [
             'category' => $child,
             'level' => $level + 1

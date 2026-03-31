@@ -1,269 +1,170 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 
 <head>
-
 <meta charset="utf-8">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
-<title>Catégories non mappées</title>
+<title>Produits à classer</title>
 
 <style>
-
-body{
-font-family:Arial,sans-serif;
-background:#f4f6f9;
-padding:30px;
+body {
+    font-family: Arial;
+    background: #f4f6f9;
+    padding: 30px;
 }
 
-h1{
-margin-bottom:20px;
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
 }
 
-.search{
-margin-bottom:20px;
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
 }
 
-table{
-width:100%;
-background:white;
-border-collapse:collapse;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+th {
+    background: #1f2933;
+    color: white;
 }
 
-th,td{
-padding:12px;
-border-bottom:1px solid #eee;
-text-align:left;
-vertical-align:middle;
+input, select {
+    padding: 6px;
 }
 
-th{
-background:#222;
-color:white;
+.btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
-tr:hover{
-background:#f9f9f9;
+.btn-map {
+    background:#28a745;
+    color:white;
 }
-
-.badge{
-background:#dc3545;
-color:white;
-padding:4px 8px;
-border-radius:4px;
-font-size:12px;
-}
-
-.bulk{
-margin:20px 0;
-display:flex;
-gap:10px;
-align-items:center;
-}
-
-select{
-padding:6px;
-min-width:250px;
-}
-
-button{
-padding:7px 14px;
-background:#28a745;
-color:white;
-border:none;
-border-radius:4px;
-cursor:pointer;
-}
-
-button:hover{
-background:#218838;
-}
-
-.pagination{
-margin-top:20px;
-}
-
 </style>
-
 </head>
 
 <body>
 
-<h1>Catégories non mappées</h1>
+<h1>Produits non classés</h1>
 
-@if(session('success'))
-<p style="color:green">{{ session('success') }}</p>
-@endif
-
-
-<div class="search">
-
-<form method="GET">
-
-<input
-type="text"
-name="search"
-placeholder="Rechercher une catégorie"
-value="{{ request('search') }}"
->
-
-<button type="submit">
-Rechercher
-</button>
-
-</form>
-<form method="POST" action="{{ route('admin.categories.rebuild') }}">
-    @csrf
-    <button type="submit" style="
-        padding:8px 14px;
-        background:#007bff;
-        color:white;
-        border:none;
-        border-radius:4px;
-        cursor:pointer;
-        margin-bottom:15px;
-    ">
-        🔄 Recalculer les catégories
-    </button>
-</form>
-</div>
-
-
-@if($unmapped->count() === 0)
-
-<p>Toutes les catégories sont mappées 🎉</p>
-
-@else
-
-
-<form method="POST" action="{{ route('admin.categories.mapBulk') }}">
-
-@csrf
-
-
-<div class="bulk">
-
-<select name="category_id">
-
-@foreach($categories as $category)
-
-<option value="{{ $category->id }}">
-{{ $category->name }}
-</option>
-
-@foreach($category->childrenRecursive as $child)
-
-@include('admin.partials.category-option',[
-'category'=>$child,
-'level'=>1
-])
-
-@endforeach
-
-@endforeach
-
-</select>
-
-
-<button type="submit">
-Mapper sélection
-</button>
-
-</div>
-
+<p class="mb-4 text-sm text-gray-500">
+    {{ $unmapped->total() }} catégories non mappées
+</p>
 
 <table>
 
 <thead>
-
 <tr>
-
-<th width="40"></th>
-
-<th width="200">
-Site
-</th>
-
-<th>
-Catégorie brute
-</th>
-
-<th width="120">
-Occurrences
-</th>
-
+<th>ID</th>
+<th>Produit</th>
+<th>Catégorie brute</th>
+<th>Catégorie cible</th>
+<th>Rule</th>
+<th>Priorité</th>
+<th>Action</th>
 </tr>
-
 </thead>
-
 
 <tbody>
 
-@foreach($unmapped as $item)
-
+@if($products->isEmpty())
 <tr>
+    <td colspan="7">Aucun résultat</td>
+</tr>
+@endif
+
+@foreach($products as $product)
+
+@php
+$suggest = strtolower(collect(explode(' ', $product->name))
+    ->filter(fn($w) => strlen($w) > 4)
+    ->first());
+@endphp
+
+<tr id="row-{{ $product->id }}">
+
+<td>{{ $product->id }}</td>
+
+<td>{{ $product->name }}</td>
+
+<td>{{ $product->raw_category }}</td>
 
 <td>
+<select id="cat-{{ $product->id }}">
+@foreach($categories as $category)
+<option value="{{ $category->id }}">{{ $category->name }}</option>
 
-<input
-type="checkbox"
-name="raw_categories[]"
-value="{{ $item->raw_category }}"
->
+@foreach($category->childrenRecursive as $child)
+@include('admin.partials.category-option', ['category'=>$child,'level'=>1])
+@endforeach
 
+@endforeach
+</select>
 </td>
 
-
 <td>
-
-{{ $item->site->name ?? 'N/A' }}
-
+<input type="text" id="rule-{{ $product->id }}" value="{{ $suggest }}">
 </td>
 
-
 <td>
-
-<strong>
-
-{{ $item->raw_category }}
-
-</strong>
-
+<select id="priority-{{ $product->id }}">
+<option value="100">100</option>
+<option value="80">80</option>
+<option value="60" selected>60</option>
+<option value="40">40</option>
+<option value="20">20</option>
+</select>
 </td>
 
-
 <td>
-
-<span class="badge">
-
-{{ $item->occurrences }}
-
-</span>
-
+<button class="btn btn-map" onclick="mapProduct({{ $product->id }})">
+Mapper
+</button>
 </td>
 
 </tr>
 
 @endforeach
-
 
 </tbody>
 
 </table>
 
-
-<div class="pagination">
-
-{{ $unmapped->links() }}
-
+<div class="mt-6">
+    {{ $unmapped->appends(request()->query())->links() }}
 </div>
 
+<script>
+function mapProduct(id) {
 
-</form>
+    const category_id = document.getElementById('cat-'+id).value;
+    const rule = document.getElementById('rule-'+id).value;
+    const priority = document.getElementById('priority-'+id).value;
 
-@endif
+    fetch('/admin/products/map', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            product_id: id,
+            category_id: category_id,
+            rule: rule,
+            priority: priority
+        })
+    })
+    .then(() => {
+        document.getElementById('row-'+id).remove();
+    });
 
+}
+</script>
 
 </body>
-
 </html>

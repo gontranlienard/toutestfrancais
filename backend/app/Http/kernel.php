@@ -8,4 +8,8 @@ protected $middlewareGroups = [
 protected $middlewareAliases = [
     'admin.auth' => \App\Http\Middleware\AdminAuth::class,
 ];
+protected $middleware = [
+    // ...
+    \App\Http\Middleware\LogVisitor::class,
+];
 

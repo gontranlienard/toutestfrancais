@@ -40,6 +40,7 @@
                     <option value="partenariat">Demande de partenariat</option>
                     <option value="bug">Signaler un bug</option>
                     <option value="produit">Je cherche un produit</option>
+					<option value="amelioration">Je te propose une amélioration</option>
                 </select>
             </div>
 

@@ -8,8 +8,8 @@
 
         <ul>
             <li><a href="{{ route('account.dashboard') }}">Mon compte</a></li>
-            <li><a href="#">Mes favoris</a></li>
-            <li><a href="#">Changer mon mot de passe</a></li>
+            <li><a href="{{ route('account.wishlist') }}">Mes favoris</a></li>
+            <li><a href="#">Changer mot de passe</a></li>
 
             <li>
                 <form method="POST" action="{{ route('logout') }}">

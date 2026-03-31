@@ -10,7 +10,10 @@ class Site extends Model
         'name',
         'slug'
     ];
-
+	public function affiliate()
+	{
+    return $this->hasOne(Affiliate::class);
+	}
     public function offers()
     {
         return $this->hasMany(Offer::class);

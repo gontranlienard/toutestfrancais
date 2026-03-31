@@ -1,4 +1,4 @@
-<aside class="sidebar">
+<div class="mobile-menu">
 
     <h4 class="sidebar-title">Catégories</h4>
 
@@ -12,7 +12,7 @@
         <p class="no-category">Aucune catégorie</p>
     @endif
 
-</aside>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

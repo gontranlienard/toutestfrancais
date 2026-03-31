@@ -6,10 +6,12 @@
     @if(request('q'))
         Résultats pour : "{{ request('q') }}"
     @else
-        Produits récents
+       <h2>
+    Je compare {{ number_format($countCompared, 0, ',', ' ') }} produits.
+</h2>
     @endif
 </h2>
-
+<p></p>
 <div class="product-grid">
     @forelse($products as $product)
         @include('components.product-card', ['product' => $product])
@@ -19,7 +21,7 @@
 </div>
 
 <div class="pagination">
-    {{ $products->links('vendor.pagination.default') }}
+    {{ $products->links() }}
 </div>
 
 @endsection

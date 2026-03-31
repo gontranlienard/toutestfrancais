@@ -58,7 +58,8 @@ class ProductImportService
                     ['slug' => $siteSlug],
                     [
                         'name' => $productData['site_name'] ?? ucfirst($siteSlug),
-                        'base_url' => parse_url($productData['url'] ?? '', PHP_URL_HOST)
+                        'base_url' => parse_url($productData['url'], PHP_URL_SCHEME)
+                            .'://'.parse_url($productData['url'], PHP_URL_HOST)
                     ]
                 );
 
@@ -88,7 +89,6 @@ class ProductImportService
 
                 $normalizedName = $this->normalize($productName);
 
-                // Priorité référence constructeur si présente
                 $reference = $productData['mpn']
                     ?? $productData['sku']
                     ?? null;
@@ -113,106 +113,125 @@ class ProductImportService
                     ]
                 );
 
+                /*
+                |--------------------------------------------------------------------------
+                | Compléter category_path si vide
+                |--------------------------------------------------------------------------
+                */
+                if (!empty($productData['category_path']) && !$product->site_category_path) {
+                    $product->site_category_path = $productData['category_path'];
+                    $product->save();
+                }
+
                 $offersCreated = 0;
 
                 /*
                 |--------------------------------------------------------------------------
-                | PRODUIT AVEC VARIANTES
+                | VARIANTS (aligné feed)
                 |--------------------------------------------------------------------------
                 */
-                if (!empty($productData['variants'])) {
+                foreach ($productData['variants'] ?? [] as $variantData) {
 
-                    foreach ($productData['variants'] as $variantData) {
+                    $price = $variantData['price'] ?? null;
 
-                        $price = $variantData['price'] ?? null;
-
-                        if (!$price || $price <= 0) {
-                            continue;
-                        }
-
-                        $variantKey = $this->normalize(
-                            ($variantData['ean'] ?? '') .
-                            ($variantData['sku'] ?? '') .
-                            $modelKey
-                        );
-
-                        $variant = Variant::firstOrCreate(
-                            [
-                                'product_id' => $product->id,
-                                'normalized_variant' => $variantKey
-                            ],
-                            [
-                                'ean' => $variantData['ean'] ?? null,
-                                'sku' => $variantData['sku'] ?? null
-                            ]
-                        );
-
-                        $offer = Offer::updateOrCreate(
-                            [
-                                'variant_id' => $variant->id,
-                                'site_id' => $site->id
-                            ],
-                            [
-                                'price' => $price,
-                                'currency' => $variantData['currency'] ?? 'EUR',
-                                'availability' => $variantData['availability'] ?? true,
-                                'url' => $productData['url'] ?? '#'
-                            ]
-                        );
-
-                        PriceHistory::firstOrCreate(
-                            [
-                                'offer_id' => $offer->id,
-                                'price' => $price
-                            ]
-                        );
-
-                        $offersCreated++;
+                    if (!$price || $price <= 0) {
+                        continue;
                     }
-                }
 
-                /*
-                |--------------------------------------------------------------------------
-                | PRODUIT SIMPLE
-                |--------------------------------------------------------------------------
-                */
-                if (empty($productData['variants']) && !empty($productData['price'])) {
+                    $size = $variantData['size'] ?? null;
+                    $color = $variantData['color'] ?? null;
+                    $ean = $variantData['ean'] ?? null;
 
-                    $price = $productData['price'];
-
-                    if ($price > 0) {
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Variant Key (logique feed)
+                    |--------------------------------------------------------------------------
+                    */
+                    if (!$size && !$color && !$ean) {
 
                         $variantKey = $this->normalize($modelKey);
 
-                        $variant = Variant::firstOrCreate(
-                            [
-                                'product_id' => $product->id,
-                                'normalized_variant' => $variantKey
-                            ]
+                    } else {
+
+                        $variantKey = $this->normalize(
+                            ($ean ?? '') .
+                            ($size ?? '') .
+                            ($color ?? '') .
+                            $modelKey
                         );
 
-                        $offer = Offer::updateOrCreate(
-                            [
-                                'variant_id' => $variant->id,
-                                'site_id' => $site->id
-                            ],
-                            [
-                                'price' => $price,
-                                'currency' => $productData['currency'] ?? 'EUR',
-                                'availability' => true,
-                                'url' => $productData['url'] ?? '#'
-                            ]
-                        );
-
-                        PriceHistory::firstOrCreate(
-                            [
-                                'offer_id' => $offer->id,
-                                'price' => $price
-                            ]
-                        );
-
-                        $offersCreated++;
                     }
+
+                    $variant = Variant::firstOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'normalized_variant' => $variantKey
+                        ],
+                        [
+                            'ean' => $ean ?: null,
+                            'size' => $size ?: null,
+                            'color' => $color ?: null
+                        ]
+                    );
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Mise à jour size / color si vide
+                    |--------------------------------------------------------------------------
+                    */
+                    if ($size && !$variant->size) {
+                        $variant->size = substr($size, 0, 20);
+                    }
+
+                    if ($color && !$variant->color) {
+                        $variant->color = substr($color, 0, 50);
+                    }
+
+                    $variant->save();
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | 🔥 CAS PRODUIT SIMPLE (IMPORTANT)
+                    |--------------------------------------------------------------------------
+                    | Si :
+                    | - pas de size
+                    | - pas de color
+                    | - ean présent
+                    |
+                    | => on remonte EAN dans product (comme feed)
+                    |--------------------------------------------------------------------------
+                    */
+                    if ($ean && !$size && !$color && !$product->ean) {
+                        $product->ean = $ean;
+                        $product->save();
+                    }
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | OFFER
+                    |--------------------------------------------------------------------------
+                    */
+                    $offer = Offer::updateOrCreate(
+                        [
+                            'variant_id' => $variant->id,
+                            'site_id' => $site->id
+                        ],
+                        [
+                            'price' => $price,
+                            'currency' => $variantData['currency'] ?? 'EUR',
+                            'availability' => $variantData['availability'] ?? true,
+                            'url' => $variantData['offer_url'] ?? $productData['url']
+                        ]
+                    );
+
+                    PriceHistory::firstOrCreate(
+                        [
+                            'offer_id' => $offer->id,
+                            'price' => $price
+                        ]
+                    );
+
+                    $offersCreated++;
                 }
 
                 if ($offersCreated === 0) {
@@ -243,63 +262,37 @@ class ProductImportService
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HELPERS
-    |--------------------------------------------------------------------------
-    */
-
     private function normalize($value)
     {
         return Str::lower(preg_replace('/[^a-zA-Z0-9]/', '', $value));
     }
 
     private function generateModelKey($brand, $name)
-{
-    $brand = strtolower($brand);
-    $nameUpper = strtoupper($name);
+    {
+        $brand = strtolower($brand);
+        $nameUpper = strtoupper($name);
 
-    preg_match_all('/\b[A-Z0-9\-]{3,}\b/', $nameUpper, $matches);
+        preg_match_all('/\b[A-Z0-9\-]{3,}\b/', $nameUpper, $matches);
 
-    $bestCandidate = null;
+        foreach ($matches[0] as $candidate) {
 
-    foreach ($matches[0] as $candidate) {
+            $candidate = str_replace('-', '', $candidate);
 
-        $candidate = str_replace('-', '', $candidate);
-
-        if (
-            preg_match('/[A-Z]/', $candidate) &&
-            preg_match('/\d/', $candidate)
-        ) {
-            if (strlen($candidate) >= 3 && strlen($candidate) <= 10) {
-                $bestCandidate = $candidate;
-                break;
+            if (
+                preg_match('/[A-Z]/', $candidate) &&
+                preg_match('/\d/', $candidate)
+            ) {
+                if (strlen($candidate) >= 3 && strlen($candidate) <= 10) {
+                    return $this->normalize($brand . ' ' . $candidate);
+                }
             }
         }
+
+        $text = strtolower($brand . ' ' . $name);
+        $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+
+        return $this->normalize($text);
     }
-
-    if ($bestCandidate) {
-        return $this->normalize($brand . ' ' . $bestCandidate);
-    }
-
-    // fallback nettoyage
-    $text = strtolower($brand . ' ' . $name);
-    $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
-
-    $generic = [
-        'blouson','casque','gant','gants',
-        'veste','pantalon','homme','femme',
-        'man','lady','men','women',
-        'solid','evo','tech','air',
-        'uni','black','white','carbon'
-    ];
-
-    foreach ($generic as $word) {
-        $text = preg_replace('/\b'.$word.'s?\b/', '', $text);
-    }
-
-    return $this->normalize($text);
-}
 
     private function uniqueSlug($name)
     {

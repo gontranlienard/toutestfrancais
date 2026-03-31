@@ -12,4 +12,9 @@ class Wishlist extends Model
         'price_when_added',
         'alert_sent_at'
     ];
+
+    public function variant()
+    {
+        return $this->belongsTo(\App\Models\Variant::class);
+    }
 }
