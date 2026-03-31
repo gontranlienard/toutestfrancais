@@ -5,3 +5,5 @@
 /backend/storage/logs/
 /backend/storage/framework/
 /backend/bootstrap/cache/
+echo "*.sql" >> .gitignore
+echo "*.sql.gz" >> .gitignore
