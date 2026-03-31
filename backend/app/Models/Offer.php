@@ -31,10 +31,28 @@ class Offer extends Model
     {
         return $this->hasMany(PriceHistory::class);
     }
-	public function product()
-	{
-    return $this->belongsTo(\App\Models\Product::class);
-	}
+
+    public function product()
+    {
+        return $this->belongsTo(\App\Models\Product::class);
+    }
+
+    public function getAffiliateUrlAttribute()
+    {
+        $affiliate = $this->site->affiliate;
+
+        if (!$affiliate || !$affiliate->active) {
+            return $this->url;
+        }
+
+        $separator = str_contains($this->url, '?') ? '&' : '?';
+
+        $template = $affiliate->url_template;
+
+        return str_replace(
+            '{url}',
+            $this->url . $separator,
+            $template
+        );
+    }
 }
-
-

@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class WishlistController extends Controller
 {
+    public function index()
+    {
+        $wishlists = Wishlist::with('variant.product', 'variant.offers')
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return view('account.wishlist', compact('wishlists'));
+    }
+
     public function toggle($variantId)
     {
 
@@ -49,5 +59,16 @@ class WishlistController extends Controller
         return response()->json([
             'status' => 'added'
         ]);
+    }   // ← fermeture de toggle manquante
+
+    public function destroy($id)
+    {
+        $wishlist = Wishlist::where('user_id', auth()->id())
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $wishlist->delete();
+
+        return redirect()->back();
     }
 }

@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use App\Models\Import;
+use App\Services\ProductImportService;
+
+class ImportGlobalProducts extends Command
+{
+    protected $signature = 'import:scraper-old';
+    protected $description = 'Import all product JSON files';
+
+    protected $files = [
+        'dafy-products.json',
+    ];
+
+    public function handle()
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Vérifier si un import est déjà en cours
+        |--------------------------------------------------------------------------
+        */
+        if (Import::where('status', 'running')->exists()) {
+            $this->error('Un import est déjà en cours.');
+            return;
+        }
+
+        foreach ($this->files as $filename) {
+
+            $this->line('');
+            $this->line('============================================================');
+            $this->info("IMPORT : {$filename}");
+            $this->line('============================================================');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Vérifier existence fichier
+            |--------------------------------------------------------------------------
+            */
+            $path = storage_path('app/imports/' . $filename);
+
+            if (!file_exists($path)) {
+                $this->error("Fichier introuvable : {$filename}");
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Générer site_slug propre
+            |--------------------------------------------------------------------------
+            */
+            $siteSlug = str_replace('-products', '', pathinfo($filename, PATHINFO_FILENAME));
+
+            /*
+            |--------------------------------------------------------------------------
+            | Création import
+            |--------------------------------------------------------------------------
+            */
+            $import = Import::create([
+                'site_slug' => $siteSlug,
+                'filename' => $filename,
+                'status' => 'pending',
+                'total_products' => 0,
+                'processed_products' => 0,
+                'success_products' => 0,
+                'failed_products' => 0,
+                'errors' => null,
+            ]);
+
+            try {
+
+                app(ProductImportService::class)->handle($import);
+
+                $this->info("✔ Import terminé : {$filename}");
+
+            } catch (\Exception $e) {
+
+                $import->update([
+                    'status' => 'failed',
+                    'errors' => $e->getMessage(),
+                    'finished_at' => now()
+                ]);
+
+                $this->error("✘ Erreur sur {$filename}");
+                $this->error($e->getMessage());
+            }
+        }
+
+        $this->line('');
+        $this->info('IMPORT GLOBAL TERMINÉ');
+    }
+}

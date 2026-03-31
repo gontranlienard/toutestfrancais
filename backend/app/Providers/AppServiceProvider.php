@@ -6,6 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Wishlist;
+use App\Models\Brand;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,14 +23,44 @@ class AppServiceProvider extends ServiceProvider
 
             /*
             |---------------------------------
+            | Extraction des marques
+            |---------------------------------
+            */
+			$brands = cache()->remember('brands_with_real_competition', 3600, function () {
+
+                return DB::table('brands')
+					->where('visible', 1)
+                    ->whereExists(function ($query) {
+
+                        $query->select(DB::raw(1))
+                            ->from('products')
+                            ->join('variants', 'variants.product_id', '=', 'products.id')
+                            ->join('offers', 'offers.variant_id', '=', 'variants.id')
+                            ->whereColumn('products.brand_id', 'brands.id')
+                            ->groupBy('products.id')
+                            ->havingRaw('COUNT(DISTINCT offers.site_id) >= 2');
+
+                    })
+                    ->orderBy('name')
+                    ->get();;
+});
+
+$view->with('brands', $brands);
+						
+			/*
+            |---------------------------------
             | Compter produits par catégorie
             |---------------------------------
             */
 
-            $counts = DB::table('product_category')
-                ->select('category_id', DB::raw('COUNT(DISTINCT product_id) as total'))
-                ->groupBy('category_id')
-                ->pluck('total', 'category_id');
+            $counts = cache()->remember('category_product_counts', 3600, function () {
+
+				return DB::table('product_category')
+					->select('category_id', DB::raw('COUNT(DISTINCT product_id) as total'))
+					->groupBy('category_id')
+					->pluck('total', 'category_id');
+
+			});
 
             /*
             |---------------------------------
@@ -35,9 +68,13 @@ class AppServiceProvider extends ServiceProvider
             |---------------------------------
             */
 
-            $categories = Category::whereNull('parent_id')
-                ->with('childrenRecursive')
-                ->get();
+			$categories = cache()->remember('categories_tree', 3600, function () {
+
+				return Category::whereNull('parent_id')
+					->with('childrenRecursive')
+					->get();
+
+			});
 
             /*
             |---------------------------------
@@ -49,7 +86,30 @@ class AppServiceProvider extends ServiceProvider
                 $this->calculateCounts($cat, $counts);
             }
 
-            $view->with('categories', $categories);
+            /*
+            |---------------------------------
+            | Wishlist utilisateur
+            |---------------------------------
+            */
+
+            $wishlist = [];
+
+            if (Auth::check()) {
+                $wishlist = Wishlist::where('user_id', Auth::id())
+                    ->pluck('variant_id')
+                    ->toArray();
+            }
+
+            /*
+            |---------------------------------
+            | Envoyer aux vues
+            |---------------------------------
+            */
+
+            $view->with([
+                'categories' => $categories,
+                'wishlist' => $wishlist
+            ]);
         });
     }
 

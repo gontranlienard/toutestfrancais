@@ -9,7 +9,8 @@ class Brand extends Model
 {
     protected $fillable = [
         'name',
-        'slug'
+        'slug',
+		'normalized_name'
     ];
 
     protected static function boot()

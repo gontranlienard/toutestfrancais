@@ -24,6 +24,14 @@ class CategoryController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Breadcrumb (fil d'Ariane)
+        |--------------------------------------------------------------------------
+        */
+
+        $breadcrumb = $this->buildBreadcrumb($category);
+
+        /*
+        |--------------------------------------------------------------------------
         | Récupérer TOUS les descendants récursivement
         |--------------------------------------------------------------------------
         */
@@ -46,8 +54,27 @@ class CategoryController extends Controller
 
         return view('category.show', [
             'category' => $category,
-            'products' => $products
+            'products' => $products,
+            'breadcrumb' => $breadcrumb
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Récupération du fil d'Ariane
+    |--------------------------------------------------------------------------
+    */
+
+    private function buildBreadcrumb($category)
+    {
+        $breadcrumb = [];
+
+        while ($category) {
+            array_unshift($breadcrumb, $category);
+            $category = $category->parent;
+        }
+
+        return $breadcrumb;
     }
 
     private function getAllDescendantIds($category)

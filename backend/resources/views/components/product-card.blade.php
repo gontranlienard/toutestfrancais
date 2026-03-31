@@ -8,11 +8,7 @@
             <img src="/images/no-image.png" alt="Image indisponible">
         @endif
 
-        @if(isset($product->offers_min_price) && $product->offers_min_price)
-            <span class="badge-best">
-                Meilleur prix
-            </span>
-        @endif
+       
     </div>
 
 
@@ -29,40 +25,40 @@
 			<a href="{{ route('brand.show', $product->brand->slug) }}" class="brand-link">
 				{{ $product->brand->name }}
 			</a>
-			<span class="favorite-star"  data-variant="{{ $product->variants->first()->id }}">★</span>
+			@php
+			$variant = $product->variants->first();
+			$isFavorite = $variant && in_array($variant->id, $wishlist ?? []);
+			@endphp
+			<span 
+			class="favorite-star {{ $isFavorite ? 'favorited' : '' }}"
+			data-variant="{{ $variant->id }}"
+			>
+			★
+			</span>
 		</div>
 
 		@endif
 
 
-        {{-- PRIX --}}
-        @php
-    $minPrice = null;
+					{{-- PRIX --}}
+					@php
+					$minPrice = $product->offers_min_price;
+					@endphp
 
-    foreach ($product->variants as $variant) {
-        foreach ($variant->offers as $offer) {
-            if ($minPrice === null || $offer->price < $minPrice) {
-                $minPrice = $offer->price;
-            }
-        }
-    }
-@endphp
-
-<div class="price-block">
-    @if($minPrice)
-		<span class="price-label">
-            Dès
-        </span>
-        <span class="current-price">
-            {{ number_format($minPrice, 2, ',', ' ') }} €
-        </span>
-        
-    @else
-        <span class="no-price">
-            Prix indisponible
-        </span>
-    @endif
-</div>
+					<div class="price-block">
+					@if($minPrice)
+						<span class="price-label">
+							Dès
+						</span>
+						<span class="current-price">
+							{{ number_format($minPrice, 2, ',', ' ') }} €
+						</span>
+					@else
+						<span class="no-price">
+							Prix indisponible
+						</span>
+					@endif
+					</div>
 
 
         {{-- CTA --}}

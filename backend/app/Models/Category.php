@@ -9,7 +9,8 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
-        'parent_id'
+        'parent_id',
+        'position' // 🔥 IMPORTANT
     ];
 
     protected static function boot()
@@ -21,46 +22,47 @@ class Category extends Model
                 $category->slug = Str::slug($category->name);
             }
         });
-    } // ⚠️ IMPORTANT : fermeture de boot()
-
-    public function parent()
-{
-    return $this->belongsTo(Category::class, 'parent_id');
-}
-
-public function getFullSlug()
-{
-    $slugs = [];
-    $category = $this;
-
-    while ($category) {
-        array_unshift($slugs, $category->slug);
-        $category = $category->parent;
     }
 
-    return implode('/', $slugs);
-}
-	
-	public function childrenRecursive()
-	{
-    return $this->children()
-        ->withCount('products')
-        ->with('childrenRecursive');
-	}
-	
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function getFullSlug()
+    {
+        $slugs = [];
+        $category = $this;
+
+        while ($category) {
+            array_unshift($slugs, $category->slug);
+            $category = $category->parent;
+        }
+
+        return implode('/', $slugs);
+    }
+
+    // 🔥 TRI ICI
     public function children()
     {
-        return $this->hasMany(Category::class, 'parent_id');
+        return $this->hasMany(Category::class, 'parent_id')
+                    ->orderBy('position');
+    }
+
+    public function childrenRecursive()
+    {
+        return $this->children()
+                    ->withCount('products')
+                    ->with('childrenRecursive');
     }
 
     public function products()
-{
-    return $this->belongsToMany(
-        \App\Models\Product::class,
-        'product_category',   // nom exact de ta table pivot
-        'category_id',
-        'product_id'
-    );
+    {
+        return $this->belongsToMany(
+            \App\Models\Product::class,
+            'product_category',
+            'category_id',
+            'product_id'
+        );
+    }
 }
-}
-
